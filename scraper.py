@@ -17,7 +17,7 @@ def create_parser():
     parser.add_argument('http',
                         help='The address of the site to be scraped')
     parser.add_argument('-d', '--todir',
-                        help='Name of the file to write results ' +
+                        help='Name of the .txt file to write results ' +
                         ' (defaults to output.txt)',
                         default='output.txt',
                         dest='todir')
@@ -69,18 +69,45 @@ def find_phone_nums(raw_html):
 def write_to_file(urls, emails, phone_numbers, filename):
     '''Create and write urls, emails and phone numbers to a
      text file with name {filename}'''
-    pass
+    with open(filename, 'w') as f:
+        if urls:
+            f.write('URLs:\n\n')
+            f.write('\n'.join(urls))
+        if emails:
+            f.write('\n\nEMAIL ADDRESSES:\n\n')
+            f.write('\n'.join(emails))
+        if phone_numbers:
+            f.write('\n\nPHONE NUMBERS:\n\n')
+            for num in phone_numbers:
+                f.write('({}) {}-{}\n'.format(num[0], num[1], num[2]))
 
 
 def main(args):
     parser = create_parser()
+
+    # check that args are provided
     if not args:
         print('\n\tPlease supply a web address\n')
         parser.print_help()
         sys.exit()
 
     ns = parser.parse_args()
+
+    # check that file to which results will be written is
+    # a .txt file
+    txt_file_regex = r'\.txt\Z'
+    is_txt_file = re.search(txt_file_regex, ns.todir)
+    if not is_txt_file:
+        print('\n\tOutput file must be a .txt file\n')
+        sys.exit()
+
     html_text = get_html(ns.http)
+
+    # exit program if no html is returned from address provided
+    if not html_text:
+        print('\n\tNo HTML was returned from the address you provided. ' +
+              'Try again with the following address format: www.domain.com\n')
+        sys.exit()
 
     # find and URLs, email addresses and phone numbers
     # contained in html
