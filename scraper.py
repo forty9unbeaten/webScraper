@@ -7,7 +7,6 @@ import sys
 import argparse
 import requests
 import re
-import os
 
 
 def create_parser():
@@ -17,6 +16,11 @@ def create_parser():
                     'phone numbers')
     parser.add_argument('http',
                         help='The address of the site to be scraped')
+    parser.add_argument('-d', '--todir',
+                        help='Name of the file to write results ' +
+                        ' (defaults to output.txt)',
+                        default='output.txt',
+                        dest='todir')
     return parser
 
 
@@ -62,6 +66,12 @@ def find_phone_nums(raw_html):
     return list(set(re.findall(phone_num_regex, raw_html)))
 
 
+def write_to_file(urls, emails, phone_numbers, filename):
+    '''Create and write urls, emails and phone numbers to a
+     text file with name {filename}'''
+    pass
+
+
 def main(args):
     parser = create_parser()
     if not args:
@@ -69,14 +79,17 @@ def main(args):
         parser.print_help()
         sys.exit()
 
-    address = parser.parse_args().http
-    html_text = get_html(address)
+    ns = parser.parse_args()
+    html_text = get_html(ns.http)
 
     # find and URLs, email addresses and phone numbers
     # contained in html
     urls = find_urls(html_text)
     emails = find_emails(html_text)
     phone_nums = find_phone_nums(html_text)
+
+    # write search results to text file
+    write_to_file(urls, emails, phone_nums, ns.todir)
 
 
 if __name__ == '__main__':
