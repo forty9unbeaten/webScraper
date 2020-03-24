@@ -7,6 +7,7 @@ import sys
 import argparse
 import requests
 import re
+from my_html_parser import HTMLScraper
 
 
 def create_parser():
@@ -48,8 +49,17 @@ def format_address(address):
 
 def find_urls(raw_html):
     '''Finds and returns list of urls contained in raw html from a webpage'''
+
+    # find URLs directly in HTML with regex
     url_regex = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    return list(set(re.findall(url_regex, raw_html)))
+    urls = re.findall(url_regex, raw_html)
+
+    # find relative URLs in 'img' and 'a' tag attributes
+    scraper = HTMLScraper()
+    scraper.feed(raw_html)
+
+    urls = list(set(urls + scraper.urls))
+    return sorted(urls)
 
 
 def find_emails(raw_html):
